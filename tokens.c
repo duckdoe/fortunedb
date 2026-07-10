@@ -17,7 +17,6 @@ char *lower(char *c)
         result[i] = 'a' + gap;
     }
 
-    printf("lowercase: %s", result);
     result[len] = '\0';
     return result;
 }
@@ -53,12 +52,10 @@ token_t *tokenize(char *input)
                 i++;
 
             int len = i - start;
-            printf("Length: %d", len);
 
             token.value = malloc(len + 1);
             token.type = STRING;
 
-            printf("%s", token.value);
             strncpy(token.value, input + start, len);
             token.value[len] = '\0';
 
@@ -88,7 +85,7 @@ token_t *tokenize(char *input)
         token.value[len] = '\0';
 
         char *lowercase = lower(token.value);
-        printf("type: %s", lowercase);
+
         if (strcmp(lowercase, "set") == 0)
             token.type = SET;
         else if (strcmp(lowercase, "get") == 0)
@@ -114,7 +111,6 @@ token_t *tokenize(char *input)
     token_t token;
 
     token.type = EOI;
-    printf("type: %d\n", token.type);
     token.value = "\0";
 
     token_list[buffer_size - 1] = token;
