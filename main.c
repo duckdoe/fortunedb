@@ -1,14 +1,19 @@
 #include "main.h"
-#include "parser.h"
+#include "hash.h"
 #include <stdio.h>
 
 #define INPUT_SIZE 256
-#define BUFFER_SZE 256 // This represents the size of the hashmap
+#define BUFFER_SZE 2 // This represents the size of the hashmap
 
 int main()
 {
     char input[INPUT_SIZE];
     printf("Welcome to fortunedb press Ctrl^c to exit\n\n");
+
+    hashmap map;
+    map.data = malloc (HASH_SIZE * sizeof(hnode_t));
+    map.count = calloc(HASH_SIZE, sizeof(hnode_t)); // initilises the value in memory with the type's
+                                                    // zero value
 
     while (1)
     {
@@ -19,7 +24,7 @@ int main()
         if (strcmp(lowercase, "exit") == 0)
         {
             printf("Goodbye :)\n");
-            break;
+            return 0;
         }
 
         token_t *tokens = tokenize(input);
@@ -31,16 +36,25 @@ int main()
         }
 
         node_t node = parse(tokens);
-        node_to_string(node);
 
-        node_t map[256];
-
-        for (int i = 0; tokens[i].type != EOI; i++)
+        switch(node.type)
         {
-            free(tokens[i].value); // free individual token values after use.
-        }
+            case NODE_SET:
+                hnode_t hnode;
+                hnode.key = node.key;
+                hnode.value = node.value;
+                hnode.next = NULL;
 
-        free(tokens); // free the tokens array after use.
+                hashmap_set(&map, &hnode);
+
+                hashmap_to_string(map);
+                break;
+            case NODE_GET:
+                hashmap_get(&map, node.key);
+                break;
+            default:
+                printf("Something bad happened");
+        }
 
         printf("\n"); // print another newline so the terminal can be pretty.
     }
