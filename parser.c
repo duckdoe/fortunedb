@@ -121,6 +121,7 @@ node_t parse (token_t *tokens)
             break;
         default:
             printf("Unknown command '%s'\n", tokens[i].value);
+            node.has_error = true;
             break;
     }
 

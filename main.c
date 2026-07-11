@@ -11,8 +11,8 @@ int main()
     printf("Welcome to fortunedb press Ctrl^c to exit\n\n");
 
     hashmap map;
-    map.data = malloc (HASH_SIZE * sizeof(hnode_t));
-    map.count = calloc(HASH_SIZE, sizeof(hnode_t)); // initilises the value in memory with the type's
+    map.data = calloc (HASH_SIZE, sizeof(hnode_t));
+    map.count = calloc(HASH_SIZE, sizeof(int)); // initilises the value in memory with the types
                                                     // zero value
 
     while (1)
@@ -37,6 +37,11 @@ int main()
 
         node_t node = parse(tokens);
 
+        if (node.has_error == true)
+        {
+            continue;
+        }
+
         switch(node.type)
         {
             case NODE_SET:
@@ -51,6 +56,11 @@ int main()
                 break;
             case NODE_GET:
                 hashmap_get(&map, node.key);
+                break;
+            case NODE_DEL:
+                hashmap_del(&map, node.key);
+
+                hashmap_to_string(map);
                 break;
             default:
                 printf("Something bad happened");

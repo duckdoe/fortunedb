@@ -4,7 +4,7 @@
 # @file
 # @version 0.1
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c11
+CFLAGS = -g -O0 -Wall -Wextra -std=c11
 
 TARGET = bin/fortunedb
 
