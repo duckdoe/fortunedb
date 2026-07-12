@@ -92,6 +92,10 @@ token_t *tokenize(char *input)
             token.type = GET;
         else if (strcmp(lowercase, "del") == 0)
             token.type = DEL;
+        else if (strcmp(lowercase, "count") == 0)
+            token.type = COUNT;
+        else if (strcmp(lowercase, "exist") == 0)
+            token.type = EXIST;
         else
             token.type = IDENT;
 

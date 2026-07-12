@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "tokens.h"
 #include <stdio.h>
 
 node_t parse (token_t *tokens)
@@ -119,6 +120,53 @@ node_t parse (token_t *tokens)
             node.next = NULL;
 
             break;
+        case COUNT:
+            i++;
+
+            if (tokens[i].type != EOI)
+            {
+                printf("Too many arguments given to COUNT command\n");
+            }
+
+            node.type = NODE_COUNT;
+            node.key = NULL;
+            node.value = NULL;
+            node.next = NULL;
+
+            break;
+        case EXIST:
+            i++;
+
+            if (tokens[i].type == EOI)
+            {
+                printf("The EXIST command takes only one argument, but %d was given\n", i-1);
+                node.has_error = true;
+                break;
+            }
+
+            if (tokens[i].type != IDENT)
+            {
+                printf("Can only EXIST identifiers, %s is not an identifier\n", tokens[i].value);
+                node.has_error = true;
+                break;
+            }
+
+            key = tokens[i].value;
+
+            i++;
+
+            if (tokens[i].type != EOI)
+            {
+                printf("Too many arguments given to EXIST command\n");
+            }
+
+            node.type = NODE_EXIST;
+            node.key = key;
+            node.value = NULL;
+            node.next = NULL;
+
+            break;
+
         default:
             printf("Unknown command '%s'\n", tokens[i].value);
             node.has_error = true;

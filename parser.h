@@ -11,6 +11,8 @@ typedef enum
 NODE_SET,
 NODE_GET,
 NODE_DEL,
+NODE_EXIST,
+NODE_COUNT,
 } nodetype;
 
 struct node_t

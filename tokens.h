@@ -10,6 +10,8 @@ typedef enum
 SET, // for settting key value pairs
 GET, // for getting the value of a key
 DEL, // for deleting a key
+COUNT,
+EXIST,
 IDENT, // just the representation of the key/value
 STRING, // Represents a string
 EOI, // Represent end of input

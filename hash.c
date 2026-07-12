@@ -134,7 +134,11 @@ void hashmap_del(hashmap *map, char *key)
         if (pnode == NULL && cnode->next != NULL)
         {
             hnode_t *next = cnode->next;
-            map->data[hash] = *next;
+
+            *cnode = *next;
+            map->data[hash] = *cnode;
+
+            free(next);
 
             return;
         }
@@ -162,9 +166,9 @@ int hashmap_count(hashmap map)
     }
 
     return total;
-}
+ }
 
-bool hashmap_exists(hashmap *map, char *key)
+bool hashmap_exist(hashmap *map, char *key)
 {
     unsigned long hash = djb2(key);
     hash = hash % HASH_SIZE;

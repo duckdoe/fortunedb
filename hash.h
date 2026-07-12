@@ -1,7 +1,7 @@
 #ifndef HASH_H_
 #define HASH_H_
 
-#define HASH_SIZE 2
+#define HASH_SIZE 256
 
 #include "parser.h"
 
@@ -26,6 +26,8 @@ unsigned long dbj2(const char *c);
 void hashmap_set(hashmap *map, hnode_t *node);
 void hashmap_get(hashmap *map, char *key);
 void hashmap_del(hashmap *map, char *key);
+int hashmap_count(hashmap map);
+bool hashmap_exist(hashmap *map, char *key);
 void hashmap_to_string(hashmap map);
 
 #endif // HASH_H_
