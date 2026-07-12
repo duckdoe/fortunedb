@@ -1,310 +1,123 @@
-# Redis-Lite
+# FortuneDB
 
-> A miniature Redis-inspired in-memory key-value database written in C.
+FortuneDB is a small Redis-inspired key-value database written in C. It runs as an interactive terminal program, keeps string keys and values in a custom hash map, and writes them back to a tiny snapshot file when you leave. No server process, no network layer, and—mercifully—no configuration ceremony: just a compact place to learn what sits underneath a dictionary and a database.
 
-This project is part of my journey into systems programming. The goal is **not** to clone Redis feature-for-feature, but to understand how databases work under the hood by implementing one from scratch.
+## Why I built this
 
----
+I wanted to stop treating things such as Python dictionaries and Redis as polite magic. Building a small database from scratch was a practical way to get my hands on hash tables, collisions, linked lists, parsing, file I/O, pointers, and the particular brand of responsibility that comes with allocating memory in C.
 
-## Goals
-
-- Learn hash tables by implementing my own.
-    
-- Build a command parser (REPL).
-    
-- Understand persistence.
-    
-- Practice manual memory management.
-    
-- Explore systems programming concepts before learning Rust.
-    
-
----
+It is deliberately a learning project, not an attempt to reproduce Redis feature for feature.
 
 ## Features
 
-### Core Commands
+- Interactive REPL with an `exit` command.
+- `SET`, `GET`, `DEL`, `EXIST`, and `COUNT` commands.
+- Case-insensitive command names.
+- Bare values and quoted strings, including strings with spaces.
+- A 256-bucket hash map using the `djb2` hash function.
+- Separate chaining with linked lists when keys land in the same bucket.
+- Snapshot persistence: load a database on startup and save it on exit.
+- Command validation for unknown commands and incorrect argument counts.
 
--  `SET key value`
-    
--  `GET key`
-    
--  `DEL key`
-    
--  `EXISTS key`
-    
--  `COUNT`
-    
--  `CLEAR`
-    
+## How it works
 
----
+Input passes through a small lexer and parser before being dispatched to the hash map. The map hashes a key into one of 256 buckets; collisions are kept in a linked list hanging off that bucket. `SET` updates an existing key or adds a new node, while the other commands look up, delete, count, or test for a key.
 
-### Storage
+When the program starts, it reads the selected snapshot if one already exists. On a normal `exit`, it walks the hash map and writes the current contents back out. Simple on purpose, which is often the best kind of simple when you are trying to see the machinery clearly.
 
--  Custom hash map implementation
-    
--  Collision handling using linked lists
-    
--  Dynamic memory allocation
-    
--  String key/value support
-    
+## Installation
 
----
+You only need a C11-capable compiler and `make`. The provided build uses `gcc` by default and has no third-party dependencies.
 
-### Persistence
+Clone the repository and enter it:
 
--  Save database to disk on exit
-    
--  Load database on startup
-    
--  Simple snapshot file format
-    
+```sh
+git clone git@github.com:duckdoe/fortunedb.git
+cd fortunedb
+```
 
----
+## Building
 
-### REPL
+Create the output directory once, then build:
 
--  Interactive shell
-    
--  Command parsing
-    
--  Helpful error messages
-    
--  `HELP` command
-    
--  `EXIT` command
-    
+```sh
+mkdir -p bin
+make
+```
 
----
+The executable is written to `bin/fortunedb`.
 
-## Stretch Goals
+To remove the compiled objects and executable:
 
-### Query Commands
+```sh
+make clean
+```
 
--  `KEYS *`
-    
--  `KEYS prefix*`
-    
--  `SAVE`
-    
--  `LOAD`
-    
+## Usage
 
-### Better Hash Map
+Pass a database name when starting the program. FortuneDB adds `.db` itself, so this command uses `fortune.db`:
 
--  Automatic resizing
-    
--  Load factor calculation
-    
--  Improved hash function experiments
-    
+```sh
+./bin/fortunedb fortune
+```
 
-### Advanced Features
-
--  Append-only log
-    
--  Expiring keys (`EXPIRE`)
-    
--  Basic transactions
-    
--  Benchmark command
-    
-
----
-
-## Example Session
+An example session:
 
 ```text
-> SET language C
-OK
+Welcome to fortunedb, type 'exit' to leave
 
-> SET project redis-lite
-OK
-
-> GET language
-C
-
-> EXISTS project
-true
-
+> SET greeting "Hello world"
+> GET greeting
+Hello world
+> EXIST greeting
+YES
 > COUNT
-2
-
-> DEL language
-OK
-
-> GET language
-(nil)
-
-> EXIT
-Saving snapshot...
-Goodbye!
+1 keys
+> DEL greeting
+> EXIST greeting
+NO
+> exit
+Goodbye :)
+Saving changes...
 ```
 
----
+### Commands
 
-# Project Structure
+| Command | What it does |
+| --- | --- |
+| `SET key value` | Creates a key or replaces its value. Values containing spaces must be quoted. |
+| `GET key` | Prints a value, or an error when the key is absent. |
+| `DEL key` | Deletes a key. |
+| `EXIST key` | Prints `YES` or `NO` depending on whether the key exists. |
+| `COUNT` | Prints the number of stored keys. |
+| `exit` | Saves the database and closes the REPL. |
 
-```
-redis-lite/
-│
-├── src/
-│   ├── main.c
-│   ├── repl.c
-│   ├── parser.c
-│   ├── hashmap.c
-│   ├── persistence.c
-│   └── commands.c
-│
-├── include/
-│   ├── hashmap.h
-│   ├── parser.h
-│   ├── persistence.h
-│   └── commands.h
-│
-├── database.db
-├── Makefile
-└── README.md
+Keys are unquoted, whitespace-delimited identifiers. The command names themselves are case-insensitive, so `set`, `SET`, and `Set` all reach the same command.
+
+## Persistence
+
+Each database is a plain-text `.db` snapshot with one `key=value` entry per line. For example, `fortune.db` might look like this:
+
+```text
+greeting=Hello world
+name=fortune
 ```
 
----
+The snapshot is loaded when FortuneDB starts and rewritten when you leave with `exit`. There are no separate `SAVE` or `LOAD` commands; persistence is tied to the program lifecycle.
 
-## Architecture
+## Project structure
 
-```
-User Input
-     │
-     ▼
-   Parser
-     │
-     ▼
-Command Dispatcher
-     │
-     ▼
- Hash Map
-     │
-     ▼
- Persistence
+```text
+.
+├── main.c       # REPL and command dispatch
+├── tokens.c     # tokenisation and command recognition
+├── parser.c     # command validation and parse nodes
+├── hash.c       # hash map, collision handling, and key operations
+├── storage.c    # snapshot read/write code
+├── fortune.db   # sample persisted database
+└── Makefile     # build instructions
 ```
 
----
+## License
 
-## Hash Map Design
-
-The database uses a hash table for constant-time average lookups.
-
-```
-Buckets
-
-0 ──► NULL
-
-1 ──► ("language", "C")
-
-2 ──► NULL
-
-3 ──► ("name", "Fortune")
-          │
-          ▼
-     ("project", "redis-lite")
-
-4 ──► NULL
-```
-
-When two keys hash to the same bucket, collisions are handled using **linked lists (separate chaining).**
-
----
-
-## Learning Objectives
-
-By the end of this project I should understand:
-
-- How hash tables work
-    
-- Why collisions happen
-    
-- How linked lists solve collisions
-    
-- How persistence works
-    
-- How command interpreters are built
-    
-- Memory allocation in C
-    
-- File I/O
-    
-- Pointer manipulation
-    
-
----
-
-## Development Roadmap
-
-### Phase 1 — Hash Map
-
--  Hash function
-    
--  Insert
-    
--  Lookup
-    
--  Delete
-    
-
-### Phase 2 — REPL
-
--  Read commands
-    
--  Parse input
-    
--  Execute commands
-    
-
-### Phase 3 — Persistence
-
--  Save snapshot
-    
--  Load snapshot
-    
-
-### Phase 4 — Extra Commands
-
--  EXISTS
-    
--  COUNT
-    
--  KEYS
-    
-
-### Phase 5 — Polish
-
--  Error handling
-    
--  Better parser
-    
--  Cleaner code
-    
--  Documentation
-    
-
----
-
-## Inspiration
-
-- Redis
-    
-- CPython dictionaries
-    
-- The C Programming Language
-    
-- Writing software from first principles
-    
-
----
-
-## Why?
-
-I wanted to understand what actually happens underneath data structures like Python's `dict` and databases like Redis instead of simply using them.
-
-This project is my first step into systems programming.
+No license has been provided for this repository.
