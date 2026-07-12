@@ -38,10 +38,9 @@ cd fortunedb
 
 ## Building
 
-Create the output directory once, then build:
+Build with:
 
 ```sh
-mkdir -p bin
 make
 ```
 
@@ -55,10 +54,10 @@ make clean
 
 ## Usage
 
-Pass a database name when starting the program. FortuneDB adds `.db` itself, so this command uses `fortune.db`:
+Pass a database name when starting the program. FortuneDB adds `.db` itself, so this command loads the included `data/fortune.db` snapshot:
 
 ```sh
-./bin/fortunedb fortune
+./bin/fortunedb data/fortune
 ```
 
 An example session:
@@ -96,7 +95,7 @@ Keys are unquoted, whitespace-delimited identifiers. The command names themselve
 
 ## Persistence
 
-Each database is a plain-text `.db` snapshot with one `key=value` entry per line. For example, `fortune.db` might look like this:
+Each database is a plain-text `.db` snapshot with one `key=value` entry per line. For example, `data/fortune.db` might look like this:
 
 ```text
 greeting=Hello world
@@ -109,13 +108,12 @@ The snapshot is loaded when FortuneDB starts and rewritten when you leave with `
 
 ```text
 .
-├── main.c       # REPL and command dispatch
-├── tokens.c     # tokenisation and command recognition
-├── parser.c     # command validation and parse nodes
-├── hash.c       # hash map, collision handling, and key operations
-├── storage.c    # snapshot read/write code
-├── fortune.db   # sample persisted database
-└── Makefile     # build instructions
+├── src/         # C source files: REPL, parser, hash map, and storage
+├── include/     # project header files
+├── data/        # sample persisted database
+├── bin/         # generated executable and object files (ignored by Git)
+├── Makefile     # build instructions
+└── README.md
 ```
 
 ## License

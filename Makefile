@@ -1,24 +1,27 @@
 ##
 # Fortune DB
-#
-# @file
-# @version 0.1
+##
+
 CC = gcc
+CPPFLAGS = -Iinclude
 CFLAGS = -g -O0 -Wall -Wextra -std=c11
 
 TARGET = bin/fortunedb
+SRC = $(wildcard src/*.c)
+OBJ = $(SRC:src/%.c=bin/%.o)
 
-SRC = $(wildcard *.c)
-OBJ = $(SRC:.c=.o)
+.PHONY: all clean
 
-$(TARGET):$(OBJ)
-	$(CC) $(OBJ) -o $(TARGET)
+all: $(TARGET)
 
-%.o:%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TARGET): $(OBJ) | bin
+	$(CC) $(CFLAGS) $(OBJ) -o $@
+
+bin/%.o: src/%.c | bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+bin:
+	mkdir -p $@
 
 clean:
 	rm -f $(OBJ) $(TARGET)
-
-
-# end
