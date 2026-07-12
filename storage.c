@@ -40,6 +40,7 @@ void read_from_file(hashmap *map, FILE *file)
         start += i + 1;
         while (i < len)
             i++;
+
         char value[i - start - 1];
 
         strncpy(value, line + start, i - start - 1);
@@ -54,7 +55,6 @@ void read_from_file(hashmap *map, FILE *file)
        strcpy(node.value, value);
 
         
-        hashmap_set(map, &node);
-        hashmap_to_string(*map);
+       hashmap_set(map, &node);
     }
 }

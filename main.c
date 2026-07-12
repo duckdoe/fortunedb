@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     FILE *file = fopen(filename, "r");
 
     char input[INPUT_SIZE];
-    printf("Welcome to fortunedb press Ctrl^D to save and exit, press Ctrl^c to terminate this program\n\n");
+    printf("Welcome to fortunedb, type 'exit' to leave\n\n");
 
     hashmap map;
     map.data = calloc (HASH_SIZE, sizeof(hnode_t));
@@ -69,16 +69,12 @@ int main(int argc, char *argv[])
                 hnode.next = NULL;
 
                 hashmap_set(&map, &hnode);
-
-                hashmap_to_string(map);
                 break;
             case NODE_GET:
                 hashmap_get(&map, node.key);
                 break;
             case NODE_DEL:
                 hashmap_del(&map, node.key);
-
-                hashmap_to_string(map);
                 break;
             case NODE_COUNT:
                 int total = hashmap_count(map);
@@ -91,9 +87,9 @@ int main(int argc, char *argv[])
                 printf("Something bad happened");
         }
 
-        printf("\n"); // print another newline so the terminal can be pretty.
+        printf("\n"); // print another newline so the terminal can be pretty
     }
-    printf("Saving changes...");
+    printf("Saving changes...\n");
     write_to_file(map, file);
     return 0;
 }
